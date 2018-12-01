@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import PolynomialFeatures
 import numpy as np
 
-
 '''
 每次运行不一样
 i为样本号
@@ -28,10 +27,7 @@ plt.rcParams['axes.unicode_minus'] = False
 # 设置风格
 plt.style.use('ggplot')
 
-
-
-
-class PolynomialRegression:
+class PolynomialRegression():
 
     def __init__(self):
         
@@ -39,7 +35,7 @@ class PolynomialRegression:
         self.pol=None
         self.degree=None
 
-    def fit(self, X, y):
+    def fit(self, X, y, n):
         if type(X)!=np.ndarray:
             X=np.array(X)
         if len(X.shape) <= 2:
@@ -51,30 +47,36 @@ class PolynomialRegression:
             y=y.reshape([-1,1])
         # 样本数
         assert X.shape[0] == y.shape[0]
-        # 样本数=特征数+1（x0=1）
-        self.degree=len(X)-1#样本数n+1
+        
+        self.degree=n
         self.W=self.Mat_transform(X,y)
         return self
   
     def Mat_transform(self,X,y):
-        self.pol=PolynomialFeatures(degree=2*self.degree)
-        mat_X=np.ones([len(X),len(X)])
-        X_t=self.pol.fit_transform(X)
-
-        X_t=X_t.sum(axis=0) #0-2n
-        # for X
-        for i in range(len(X)):
-            for j in range(len(X)):
-                mat_X[i,j]=X_t[i+j]
-        mat_X=np.mat(mat_X)
+        
+#        self.pol=PolynomialFeatures(degree=2*self.degree)
+#        mat_X=np.ones([len(X),len(X)])
+#        X_t=self.pol.fit_transform(X)
+#
+#        X_t=X_t.sum(axis=0) #0-2n
+#        # for X
+#        for i in range(len(X)):
+#            for j in range(len(X)):
+#                mat_X[i,j]=X_t[i+j]
+#        mat_X=np.mat(mat_X)
+#        self.pol=PolynomialFeatures(degree=self.degree)
+##        y_t=self.pol.fit_transform(y)
+#        y_t=np.concatenate([y]*len(X),axis=1)
+#        x_t=self.pol.fit_transform(X)
+#        mat_y=(y_t*x_t).sum(axis=0)
+#        mat_X=np.mat(mat_X)
+#        mat_y=np.mat(mat_y).reshape([-1,1])
+#        return mat_X.I*mat_y
         self.pol=PolynomialFeatures(degree=self.degree)
-#        y_t=self.pol.fit_transform(y)
-        y_t=np.concatenate([y]*len(X),axis=1)
-        x_t=self.pol.fit_transform(X)
-        mat_y=(y_t*x_t).sum(axis=0)
-        mat_X=np.mat(mat_X)
-        mat_y=np.mat(mat_y).reshape([-1,1])
-        return mat_X.I*mat_y
+        X_t=np.mat(self.pol.fit_transform(X))
+        XX=X_t.T*X_t
+        XY=X_t.T*np.mat(y)
+        return XX.I*XY
     def predict(self, X):
         if type(X)!=np.ndarray:
             X=np.array(X)
@@ -84,25 +86,21 @@ class PolynomialRegression:
         X=np.mat(X)
         return np.array(X*self.W)
 
-        
-
-
-def generate_data(A,start,end):
+def generate_data(A,start,end,sample_num):
     pol=PolynomialFeatures(len(A)-1)
-    xx=np.arange(start,end,0.1).reshape([-1,1])
+    xx=np.arange(start,end,0.01).reshape([-1,1])
     x_t=pol.fit_transform(xx)
     yy=(x_t*np.array(A)).sum(axis=1)
     yy=yy+np.random.randn(len(yy))
 #    print(xx.shape,":",yy.shape)
 #    print(xx)
     plt.scatter(xx.reshape(-1),yy)
-    select_num=np.random.choice(np.arange(len(xx)),[len(A)])
+    select_num=np.random.choice(np.arange(len(xx)),[sample_num])
     return xx.reshape(-1),yy,[xx[i] for i in select_num],[yy[i] for i in select_num]
 
 n=int(input("请输入最高次项数：\n"))
+m=int(input("请输入样本量：(越多越好)\n"))
 A=2*np.random.randn(n+1)
-
-#A = [1, -3, 5, -2, 1, 0.5,-0.2]
 
 fig = plt.figure(figsize = (8, 10))
 plt.subplot(2,1,1)
@@ -110,17 +108,11 @@ plt.xlabel('X')
 plt.ylabel('Y')
 plt.title('原函数抖动散点图像')
 
-
-
-
-
-
-
-sca_x,sca_y,fit_x,fit_y=generate_data(A,-10,10)
+sca_x,sca_y,fit_x,fit_y=generate_data(A,-2,2,m)
 
 model=PolynomialRegression()
 
-model.fit(fit_x,fit_y)
+model.fit(fit_x,fit_y,n)
 
 A_fit=model.W
 print('原系数',A)
@@ -130,5 +122,6 @@ plt.subplot(2,1,2)
 plt.xlabel('X')
 plt.ylabel('Y')
 plt.title('多项式拟合图像')
+plt.scatter(fit_x,fit_y)
 plt.plot(sca_x,y_pre)
-
+plt.show()
