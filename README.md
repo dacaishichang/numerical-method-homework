@@ -1,5 +1,5 @@
 # numerical-method-homework
-小秦老师的作业，做上参考代码供大家指正
+小秦老师的数值分析作业，做上参考代码供大家指正
 
 
 
@@ -10,6 +10,7 @@
 * Python3.6
 * matplotlib
 * numpy
+* sklearn
 
 ### Homework
 
@@ -71,4 +72,10 @@
 ```
 LU分解
 ```
+
+#### [Tenth](./Tenth)
+
+~~~
+欧拉法+修恩法
+~~~
 
